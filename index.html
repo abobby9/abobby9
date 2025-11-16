@@ -268,7 +268,11 @@
       align-items:center;
       padding:20px;
       z-index:9999;
+      -webkit-backdrop-filter: blur(2px);
+      backdrop-filter: blur(2px);
     }
+
+    .modal.open { display:flex; }
 
     .modal-content{
       background:white;
@@ -279,6 +283,22 @@
       max-height:90vh;
       overflow:auto;
       box-shadow:0 30px 60px rgba(0,0,0,0.25);
+      transform: translateY(-10px) scale(.98);
+      opacity: 0;
+      transition: transform 240ms cubic-bezier(.2,.9,.2,1), opacity 240ms ease;
+    }
+
+    /* Open animation */
+    .modal.open .modal-content{
+      transform: translateY(0) scale(1);
+      opacity:1;
+    }
+
+    /* Close animation (we toggle a class to play) */
+    .modal.closing .modal-content{
+      transform: translateY(-8px) scale(.96);
+      opacity:0;
+      transition: transform 180ms cubic-bezier(.4,0,.2,1), opacity 180ms ease;
     }
 
     .close-btn{
@@ -293,7 +313,49 @@
     /* Responsive adjustments for iframe modal */
     @media (max-width: 1100px){
       .modal-content iframe{ height: 60vh !important; }
+      .modal-content{ max-width: 94vw; padding:12px; }
     }
+    @media (max-width: 700px){
+      html, body { min-width: auto !important; }
+      .yt-thumb{ height:120px; }
+      .logo, .photo{ display:none; }
+      .title-area h1{ font-size:28px; }
+    }
+
+    /* Control row inside modal */
+    .player-controls{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      margin-top:10px;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .player-left{
+      display:flex; gap:8px; align-items:center;
+    }
+    .btn-player{
+      background:var(--accent);
+      color:white;
+      border:none;
+      padding:8px 12px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .btn-secondary{
+      background:#eee;
+      color:#222;
+    }
+    .player-title{
+      font-weight:700;
+      margin-left:8px;
+      color:#0b2b5a;
+    }
+    .small-muted{ color:#666; font-size:13px; }
+
+    /* hidden preload iframe */
+    #preloadFrame{ display:none; width:1px; height:1px; position: absolute; left:-9999px; top:-9999px; }
   </style>
 </head>
 <body>
@@ -302,7 +364,7 @@
 
     <!-- HEADER -->
     <header>
-      <img class="logo" src="https://raw.githubusercontent.com/abobby9/abobby9/main/Logo.png">
+      <img class="logo" src="https://raw.githubusercontent.com/abobby9/abobby9/main/Logo.png" alt="logo">
 
       <div class="title-area">
         <h1>A Bobby Education 9</h1>
@@ -314,7 +376,7 @@
         </div>
       </div>
 
-      <img class="photo" src="https://raw.githubusercontent.com/abobby9/abobby9/main/Photo.png">
+      <img class="photo" src="https://raw.githubusercontent.com/abobby9/abobby9/main/Photo.png" alt="photo">
     </header>
 
     <!-- SEARCH -->
@@ -423,7 +485,7 @@
   </div>
 
   <!-- PLAYLIST MODAL -->
-  <div id="playlistModal" class="modal">
+  <div id="playlistModal" class="modal" aria-hidden="true">
     <div class="modal-content">
       <div style="display:flex; justify-content:space-between;">
         <h3 id="modalTitle"></h3>
@@ -437,8 +499,16 @@
   <div id="videoPlayerModal" class="modal" aria-hidden="true">
     <div class="modal-content" role="dialog" aria-modal="true" style="max-width:900px;">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 id="nowPlayingTitle" style="margin:0;">Now Playing</h3>
-        <div class="close-btn" id="closeVideoBtn">✕</div>
+        <div class="player-left">
+          <button class="btn-player btn-secondary" id="prevBtn" title="Previous (Arrow Left)">⟨ Prev</button>
+          <button class="btn-player btn-secondary" id="nextBtn" title="Next (Arrow Right)">Next ⟩</button>
+          <div class="player-title" id="nowPlayingTitle">Now Playing</div>
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:center;">
+          <div class="small-muted" id="nowPlayingMeta"></div>
+          <button class="close-btn" id="closeVideoBtn">✕</button>
+        </div>
       </div>
 
       <div style="margin-top:10px;">
@@ -448,7 +518,18 @@
           allowfullscreen
           title="Video player"></iframe>
       </div>
+
+      <div class="player-controls">
+        <div>
+          <button class="btn-player" id="openExternalBtn">Open in YouTube</button>
+          <button class="btn-player btn-secondary" id="autoplayToggleBtn" title="Toggle autoplay">Autoplay On</button>
+        </div>
+        <div class="small-muted" id="playerHint">Use ← / → to navigate, Esc to close</div>
+      </div>
     </div>
+
+    <!-- hidden preload iframe (best-effort) -->
+    <iframe id="preloadFrame" aria-hidden="true"></iframe>
   </div>
 
   <script>
@@ -471,6 +552,10 @@
       sort: "newest",
       searchTerm: ""
     };
+
+    // Playback context: { list: [video objects], index: number }
+    let PLAYBACK_CONTEXT = { list: [], index: -1 };
+    let AUTOPLAY_ENABLED = true;
 
     /*********************************************
      * UTILITIES
@@ -545,7 +630,7 @@
       GLOBAL_DATA.videos = await fetchVideosDetails(ids);
 
       grid.innerHTML="";
-      GLOBAL_DATA.videos.forEach(v=>grid.appendChild(createVideoCard(v)));
+      GLOBAL_DATA.videos.forEach((v,i)=>grid.appendChild(createVideoCard(v, {contextList:GLOBAL_DATA.videos, index:i})));
 
       populateYearSelect();
     }
@@ -571,44 +656,159 @@
     }
 
     /*********************************************
-     * VIDEO PLAYER (UNIFIED)
+     * VIDEO PLAYER (UNIFIED) + PRELOAD
      *********************************************/
     const videoPlayerModal = document.getElementById("videoPlayerModal");
     const videoFrame = document.getElementById("videoFrame");
+    const preloadFrame = document.getElementById("preloadFrame");
     const nowPlayingTitle = document.getElementById("nowPlayingTitle");
+    const nowPlayingMeta = document.getElementById("nowPlayingMeta");
     const closeVideoBtn = document.getElementById("closeVideoBtn");
+    const openExternalBtn = document.getElementById("openExternalBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const autoplayToggleBtn = document.getElementById("autoplayToggleBtn");
 
-    function openVideoPlayer(videoId, title){
-      // set title if provided (truncated)
+    function preconnectYouTube(){
+      // Add preconnect / dns-prefetch links to speed up embed loading (idempotent)
+      if(!document.querySelector('link[data-youtube-preconnect]')){
+        const l1 = document.createElement('link');
+        l1.rel = 'preconnect';
+        l1.href = 'https://www.youtube.com';
+        l1.setAttribute('data-youtube-preconnect', '1');
+        document.head.appendChild(l1);
+
+        const l2 = document.createElement('link');
+        l2.rel = 'preconnect';
+        l2.href = 'https://www.google.com';
+        l2.setAttribute('data-youtube-preconnect', '1');
+        document.head.appendChild(l2);
+      }
+    }
+
+    function openVideoPlayerByContext(list, index){
+      // set playback context and open
+      PLAYBACK_CONTEXT.list = list || [];
+      PLAYBACK_CONTEXT.index = index ?? 0;
+      const v = PLAYBACK_CONTEXT.list[PLAYBACK_CONTEXT.index];
+      if(!v) return;
+      openVideoPlayer((typeof v.id === "string") ? v.id : (v.id.videoId || ""), v.snippet?.title || "", true);
+    }
+
+    function openVideoPlayer(videoId, title, setContext=false){
+      preconnectYouTube();
       nowPlayingTitle.textContent = title ? (title.length>70 ? title.slice(0,67)+"..." : title) : "Now Playing";
-      // set iframe src to embed with autoplay
-      videoFrame.src = "https://www.youtube.com/embed/" + encodeURIComponent(videoId) + "?autoplay=1&rel=0";
+      nowPlayingMeta.textContent = ""; // we'll set below if available
+
+      // autoplay param based on AUTOPLAY_ENABLED
+      const autoplayParam = AUTOPLAY_ENABLED ? "1" : "0";
+      const embed = "https://www.youtube.com/embed/" + encodeURIComponent(videoId) + "?autoplay=" + autoplayParam + "&rel=0";
+
+      videoFrame.src = embed;
+      videoPlayerModal.classList.add("open");
+      videoPlayerModal.classList.remove("closing");
       videoPlayerModal.style.display = "flex";
       videoPlayerModal.setAttribute("aria-hidden","false");
       document.body.style.overflow = "hidden"; // prevent background scroll
+
+      // update external link
+      openExternalBtn.onclick = ()=> window.open("https://youtube.com/watch?v=" + videoId, "_blank", "noopener");
+
+      // show meta (if we have it in current context list)
+      const ctx = PLAYBACK_CONTEXT.list || [];
+      const idx = PLAYBACK_CONTEXT.index;
+      if(ctx && ctx[idx] && ctx[idx].snippet){
+        const sec = isoDurationToSeconds(ctx[idx].contentDetails?.duration);
+        nowPlayingMeta.textContent = `${formatDuration(sec)} • ${new Date(ctx[idx].snippet.publishedAt).getFullYear()}`;
+      } else {
+        nowPlayingMeta.textContent = "";
+      }
+
+      // preload next video (best-effort)
+      preloadAdjacent();
     }
 
     function closeVideoPlayer(){
-      videoPlayerModal.style.display = "none";
+      // play close animation
+      videoPlayerModal.classList.add("closing");
+      videoPlayerModal.classList.remove("open");
       videoPlayerModal.setAttribute("aria-hidden","true");
-      videoFrame.src = ""; // stop playback
-      document.body.style.overflow = ""; // restore scrolling
+      // after animation, hide and clear src to stop playback
+      setTimeout(()=>{
+        videoPlayerModal.style.display = "none";
+        videoFrame.src = "";
+        preloadFrame.src = "";
+        document.body.style.overflow = ""; // restore scrolling
+        videoPlayerModal.classList.remove("closing");
+      }, 200);
     }
 
-    // close handlers
+    // Preload next video iframe (best-effort). Browsers may block autoplay but preconnect + hidden iframe helps.
+    function preloadAdjacent(){
+      const list = PLAYBACK_CONTEXT.list || [];
+      const idx = PLAYBACK_CONTEXT.index;
+      const nextIndex = (idx + 1) < list.length ? (idx + 1) : -1;
+      const prevIndex = (idx - 1) >= 0 ? (idx - 1) : -1;
+
+      // prefer preloading next
+      if(nextIndex >= 0){
+        const nextVideo = list[nextIndex];
+        const id = (typeof nextVideo.id === "string") ? nextVideo.id : (nextVideo.id.videoId || "");
+        // load into hidden iframe without autoplay (mute not reliable). This is a best-effort performance hint.
+        preloadFrame.src = "https://www.youtube.com/embed/" + encodeURIComponent(id) + "?autoplay=0&rel=0";
+      } else {
+        preloadFrame.src = "";
+      }
+
+      // update UI availability of prev/next buttons
+      prevBtn.disabled = prevIndex === -1;
+      nextBtn.disabled = nextIndex === -1;
+    }
+
+    // handlers
     closeVideoBtn.onclick = closeVideoPlayer;
-    // click on overlay (but not on modal content) closes
+    document.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape") {
+        if(videoPlayerModal.classList.contains("open")) closeVideoPlayer();
+        if(modal.classList.contains("open")) modal.classList.remove("open");
+      } else if(e.key === "ArrowRight"){
+        // next
+        playNext();
+      } else if(e.key === "ArrowLeft"){
+        playPrev();
+      }
+    });
+
+    // close when clicking outside content
     videoPlayerModal.addEventListener("click", (e)=>{
       if(e.target === videoPlayerModal) closeVideoPlayer();
     });
-    // ESC key closes
-    document.addEventListener("keydown", (e)=>{
-      if(e.key === "Escape") {
-        // close either player or playlist modal if open
-        if(videoPlayerModal.style.display === "flex") closeVideoPlayer();
-        if(modal.style.display === "flex") modal.style.display = "none";
+
+    prevBtn.onclick = ()=>playPrev();
+    nextBtn.onclick = ()=>playNext();
+    autoplayToggleBtn.onclick = ()=>{
+      AUTOPLAY_ENABLED = !AUTOPLAY_ENABLED;
+      autoplayToggleBtn.textContent = AUTOPLAY_ENABLED ? "Autoplay On" : "Autoplay Off";
+    };
+
+    function playNext(){
+      if(!PLAYBACK_CONTEXT.list?.length) return;
+      const idx = PLAYBACK_CONTEXT.index;
+      if(idx + 1 < PLAYBACK_CONTEXT.list.length){
+        PLAYBACK_CONTEXT.index = idx + 1;
+        const v = PLAYBACK_CONTEXT.list[PLAYBACK_CONTEXT.index];
+        openVideoPlayer((typeof v.id === "string") ? v.id : (v.id.videoId || ""), v.snippet?.title || "");
       }
-    });
+    }
+    function playPrev(){
+      if(!PLAYBACK_CONTEXT.list?.length) return;
+      const idx = PLAYBACK_CONTEXT.index;
+      if(idx - 1 >= 0){
+        PLAYBACK_CONTEXT.index = idx - 1;
+        const v = PLAYBACK_CONTEXT.list[PLAYBACK_CONTEXT.index];
+        openVideoPlayer((typeof v.id === "string") ? v.id : (v.id.videoId || ""), v.snippet?.title || "");
+      }
+    }
 
     /*********************************************
      * CREATE CARDS
@@ -620,14 +820,16 @@
       const thumb=pl.snippet.thumbnails?.medium?.url || "";
 
       div.innerHTML=`
-        <img class="playlist-thumb" src="${thumb}">
+        <img class="playlist-thumb" src="${thumb}" alt="">
         <div class="playlist-title">${escapeHtml(pl.snippet.title)}</div>
       `;
       div.onclick=()=>openPlaylist(pl.id,pl.snippet.title);
       return div;
     }
 
-    function createVideoCard(v){
+    // createVideoCard accepts an optional options object:
+    // { contextList: Array-of-video-objects, index: number } - used for prev/next navigation
+    function createVideoCard(v, options){
       // v is a full video resource from videos.list
       const vid = (typeof v.id === "string") ? v.id : (v.id.videoId || "");
       const title = v.snippet.title || "";
@@ -638,10 +840,22 @@
       const card = document.createElement("div");
       card.className = "yt-item";
       card.setAttribute("role","button");
-      card.onclick = ()=>openVideoPlayer(vid, title);
+
+      // click behavior sets PLAYBACK_CONTEXT to provided context list if available,
+      // otherwise to a singleton list containing this video (so next/prev disable).
+      card.onclick = ()=>{
+        if(options && Array.isArray(options.contextList)){
+          PLAYBACK_CONTEXT.list = options.contextList;
+          PLAYBACK_CONTEXT.index = options.index ?? options.contextList.findIndex(x=>((typeof x.id==="string")?x.id:x.id.videoId) === vid);
+        } else {
+          PLAYBACK_CONTEXT.list = [v];
+          PLAYBACK_CONTEXT.index = 0;
+        }
+        openVideoPlayer(vid, title);
+      };
 
       card.innerHTML = `
-        <img class="yt-thumb" src="${thumb}">
+        <img class="yt-thumb" src="${thumb}" alt="">
         <div class="yt-title">${escapeHtml(title)}</div>
         <div class="yt-meta">
           ${isShort?'<span class="badge-short">SHORT</span>':''}
@@ -688,7 +902,9 @@
     const closeModalBtn=document.getElementById("closeModal");
 
     async function openPlaylist(id,title){
-      modal.style.display="flex";
+      modal.classList.add("open");
+      modal.style.display = "flex";
+      modal.setAttribute("aria-hidden","false");
       modalTitle.textContent=title;
       modalVideos.innerHTML="Loading…";
 
@@ -698,7 +914,8 @@
         if(!videos.length){
           modalVideos.innerHTML = "<div>No videos in this playlist.</div>";
         } else {
-          videos.forEach(v=> modalVideos.appendChild(createVideoCard(v)));
+          // For each video, pass the full playlist array as context so prev/next works
+          videos.forEach((v,i)=> modalVideos.appendChild(createVideoCard(v, {contextList:videos, index:i})));
         }
       }catch(err){
         modalVideos.innerHTML = "<div>Error loading playlist.</div>";
@@ -706,9 +923,9 @@
       }
     }
 
-    closeModalBtn.onclick = ()=>{ modal.style.display = "none"; };
+    closeModalBtn.onclick = ()=>{ modal.classList.remove("open"); modal.style.display = "none"; modal.setAttribute("aria-hidden","true"); };
     modal.addEventListener("click", (e)=>{
-      if(e.target === modal) modal.style.display = "none";
+      if(e.target === modal) { modal.classList.remove("open"); modal.style.display = "none"; modal.setAttribute("aria-hidden","true"); }
     });
 
     /*********************************************
@@ -809,7 +1026,8 @@
         return;
       }
 
-      videos.forEach(v=>grid.appendChild(createVideoCard(v)));
+      // Pass the search results array as context so prev/next works within results
+      videos.forEach((v,i)=>grid.appendChild(createVideoCard(v, {contextList:videos, index:i})));
     }
 
     /*********************************************
