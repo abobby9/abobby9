@@ -1,1083 +1,331 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>A Bobby 9 — Hub</title>
 
-  <!-- FORCE DESKTOP MODE ON MOBILE -->
-  <meta name="viewport" content="width=1024">
+<style>
+:root {
+  --blue: #0b66c3;
+  --light-blue: #e8f3ff;
+  --lighter-blue: #f6faff;
+  --border: #000;
+  --text: #000;
+  --radius: 14px;
+  font-family: Inter, Arial, sans-serif;
+}
 
-  <title>A Bobby Education 9</title>
-  <style>
-    :root{
-      --accent:#0f62fe;
-      --muted:#666;
-      --maxw:1200px;
-      font-family: Arial, Helvetica, sans-serif;
-    }
+body {
+  margin: 0;
+  background: var(--lighter-blue);
+  color: var(--text);
+  overflow-x: hidden;
+}
 
-    /* FORCE DESKTOP MODE */
-    html, body {
-      min-width: 1024px !important;
-      overflow-x: auto;
-    }
+/* MENU BUTTON */
+.sidebar-btn {
+  background: var(--blue);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 20px;
+  border: 2px solid var(--border);
+  transition: 0.3s;
+  display: block;
+  width: max-content;
+  margin-left: auto;
+  margin-top: 20px;
+}
 
-    /* Page background */
-    body{
-      margin:0;
-      min-height:100vh;
-      background-image: url("https://raw.githubusercontent.com/abobby9/abobby9/main/Background.png");
-      background-size: cover;
-      background-position: center;
-      display:flex;
-      justify-content:center;
-      padding:28px;
-    }
+.sidebar-btn:hover {
+  transform: scale(1.08);
+}
 
-    .wrap{
-      width:100%;
-      max-width:var(--maxw);
-      background: rgba(255,255,255,0.70);
-      border-radius:14px;
-      padding:20px;
-      box-shadow: 0 22px 50px rgba(0,0,0,0.25);
-    }
+#sidebarToggle {
+  display: none;
+}
 
-    /* Header */
-    header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-      background: rgba(255,255,255,0.45);
-      padding:14px;
-      border-radius:10px;
-      margin-bottom:14px;
-    }
+/* SIDEBAR FULLY HIDDEN UNTIL MENU PRESSED */
+.sidebar {
+  width: 260px;
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  margin-left: auto;
+  margin-top: 10px;
 
-    .logo{
-      width:150px;
-      height:150px;
-      object-fit:contain;
-      border-radius:12px;
-      padding:8px;
-      background:rgba(255,255,255,0.6);
-      box-shadow:0 6px 18px rgba(0,0,0,0.18);
-    }
+  display: none;           
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: 0.3s ease;
+  padding: 15px;
+}
 
-    .photo{
-      width:150px;
-      height:150px;
-      object-fit:cover;
-      border-radius:12px;
-      box-shadow:0 6px 18px rgba(0,0,0,0.18);
-      border:3px solid rgba(255,255,255,0.6);
-    }
+/* When MENU is pressed → show sidebar */
+#sidebarToggle:checked ~ .sidebar {
+  display: block;          
+  opacity: 1;
+  transform: translateY(0);
+}
 
-    .title-area{ text-align:center; flex:1; }
-    h1{ margin:0; font-size:44px; color:#0b2b5a; }
-    .subtitle{ margin-top:8px; font-size:16px; color:#0b2b5a; font-style:italic; }
+/* Sidebar items */
+.sidebar a {
+  display: block;
+  margin: 10px 0;
+  text-decoration: none;
+  color: var(--blue);
+  font-weight: 600;
+}
 
-    /* Social buttons */
-    .social-buttons{
-      display:flex; justify-content:center; gap:14px; margin-top:12px;
-    }
-    .social-buttons a{
-      padding:10px 18px;
-      font-weight:700;
-      color:white;
-      text-decoration:none;
-      border-radius:10px;
-      box-shadow:0 6px 18px rgba(0,0,0,0.18);
-    }
-    .yt-btn{ background:#FF0000; }
-    .ig-btn{ background:#C13584; }
+.sidebar a:hover {
+  transform: translateX(6px);
+}
 
-    /* Search */
-    .search-container { display:flex; justify-content:center; margin:16px 0; }
-    .search-box { width:90%; max-width:700px; position:relative; }
+.sidebar .sub {
+  margin-left: 15px;
+  font-weight: 500;
+  font-size: 14px;
+}
 
-    #searchInput {
-      width:100%;
-      padding:12px 50px 12px 18px;
-      font-size:17px;
-      border-radius:12px;
-      border:2px solid #0b2b5a;
-      outline:none;
-      transition:0.2s;
-      background:white;
-    }
-    #searchInput:focus{
-      border-color:var(--accent);
-      box-shadow:0 0 12px rgba(15,98,254,0.2);
-    }
+/* MAIN CONTAINER */
+.container {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 25px;
+}
 
-    .search-btn, .voice-btn{
-      position:absolute;
-      top:50%;
-      transform:translateY(-50%);
-      background:transparent;
-      border:none;
-      cursor:pointer;
-      font-size:20px;
-      padding:6px;
-      line-height:1;
-    }
-    .search-btn{ right:46px; }
-    .voice-btn{ right:10px; }
+/* HEADER */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
 
-    .voice-btn.listening{
-      color:red;
-      animation:pulse 1s infinite;
-    }
-    @keyframes pulse{
-      0%{transform:translateY(-50%) scale(1);}
-      50%{transform:translateY(-50%) scale(1.16);}
-      100%{transform:translateY(-50%) scale(1);}
-    }
+.brand .photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+}
 
-    /* Filters */
-    .filters-wrapper{ display:flex; justify-content:center; margin-bottom:12px; }
-    .filters-btn{
-      padding:10px 16px;
-      font-weight:700;
-      border-radius:10px;
-      background:var(--accent);
-      color:white;
-      border:none;
-      cursor:pointer;
-    }
-    .filters-panel{ position:relative; }
-    .filters-dropdown{
-      display:none;
-      position:absolute;
-      top:44px;
-      right:0;
-      width:360px;
-      background:white;
-      border-radius:10px;
-      box-shadow:0 18px 40px rgba(0,0,0,0.2);
-      padding:12px;
-      z-index:50;
-    }
-    .filters-dropdown.open{ display:block; }
+.brand .photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-    .filters-row{ display:flex; gap:8px; margin:8px 0; align-items:center; }
-    .filters-row label{ width:80px; font-size:13px; font-weight:700; color:#0b2b5a; }
-    select, .small-input{
-      padding:8px 10px;
-      border-radius:8px;
-      border:1px solid #ccc;
-    }
-    .filters-actions{ display:flex; justify-content:space-between; margin-top:12px; }
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
-    .btn.clear{ background:#eee; border-radius:8px; padding:6px 10px; cursor:pointer; }
-    .btn.apply{ background:#0f62fe; color:white; padding:6px 10px; border-radius:8px; cursor:pointer; }
+.brand-text h1 {
+  margin: 0;
+  font-size: 28px;
+  color: var(--blue);
+}
 
-    /* Card */
-    .card{
-      background:rgba(255,255,255,0.58);
-      padding:16px;
-      border-radius:12px;
-      margin-bottom:18px;
-    }
+.tagline {
+  font-size: 14px;
+  opacity: 0.85;
+}
 
-    .playlist-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-      gap:20px;
-    }
+/* TITLE */
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--blue);
+  margin: 10px 0 15px 0;
+}
 
-    .playlist-card{
-      width:240px;
-      background:white;
-      border-radius:12px;
-      overflow:hidden;
-      box-shadow:0 6px 18px rgba(0,0,0,0.12);
-      cursor:pointer;
-      transition:0.2s;
-    }
-    .playlist-card:hover{ transform:scale(1.05); }
+/* LIST */
+.list {
+  padding: 0;
+  list-style: none;
+}
 
-    .playlist-thumb{
-      width:100%;
-      height:150px;
-      object-fit:cover;
-    }
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: white;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  margin-bottom: 14px;
+  transition: 0.3s;
+}
 
-    .playlist-title{
-      padding:10px;
-      font-weight:700;
-      text-align:center;
-      color:#0b2b5a;
-    }
+.list li:hover {
+  transform: scale(1.02);
+}
 
-    /* Videos grid */
-    .yt-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-      gap:14px;
-    }
+.serial {
+  width: 36px;
+  padding: 8px;
+  text-align: center;
+  background: var(--light-blue);
+  border-radius: 10px;
+  font-weight: bold;
+}
 
-    .yt-item{
-      background:white;
-      border-radius:10px;
-      overflow:hidden;
-      box-shadow:0 6px 16px rgba(0,0,0,0.10);
-      text-decoration:none;
-      color:black;
-      transition:0.2s;
-      cursor:pointer;
-    }
-    .yt-item:hover{ transform:translateY(-4px); }
+.edu-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+}
 
-    .yt-thumb{
-      width:100%;
-      height:140px;
-      object-fit:cover;
-    }
+.edu-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 
-    .yt-title{
-      font-size:15px;
-      font-weight:700;
-      padding:10px;
-    }
+.entry-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-    .yt-meta{
-      padding:0 10px 12px 10px;
-      font-size:12px;
-      color:gray;
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
-    }
+.entry-title {
+  padding: 6px 10px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  display: inline-block;
+}
 
-    .badge-short{
-      background:black;
-      color:white;
-      padding:3px 6px;
-      border-radius:8px;
-    }
+.entry-title a {
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: 700;
+}
 
-    /* Modal */
-    .modal{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.6);
-      display:none;
-      justify-content:center;
-      align-items:center;
-      padding:20px;
-      z-index:9999;
-      -webkit-backdrop-filter: blur(2px);
-      backdrop-filter: blur(2px);
-    }
+.entry-links a {
+  color: var(--blue);
+  text-decoration: underline;
+  font-size: 14px;
+}
 
-    .modal.open { display:flex; }
+/* ABOUT */
+.about {
+  padding: 16px;
+  border-radius: var(--radius);
+  background: rgba(135, 206, 250, 0.27);
+  border: 2px solid var(--border);
+  margin-top: 20px;
+}
 
-    .modal-content{
-      background:white;
-      border-radius:12px;
-      padding:16px;
-      width:100%;
-      max-width:1100px;
-      max-height:90vh;
-      overflow:auto;
-      box-shadow:0 30px 60px rgba(0,0,0,0.25);
-      transform: translateY(-10px) scale(.98);
-      opacity: 0;
-      transition: transform 240ms cubic-bezier(.2,.9,.2,1), opacity 240ms ease;
-    }
+.about-sign {
+  text-align: right;
+  font-weight: bold;
+  margin-top: 10px;
+}
 
-    /* Open animation */
-    .modal.open .modal-content{
-      transform: translateY(0) scale(1);
-      opacity:1;
-    }
-
-    /* Close animation (we toggle a class to play) */
-    .modal.closing .modal-content{
-      transform: translateY(-8px) scale(.96);
-      opacity:0;
-      transition: transform 180ms cubic-bezier(.4,0,.2,1), opacity 180ms ease;
-    }
-
-    .close-btn{
-      float:right;
-      cursor:pointer;
-      font-size:20px;
-      font-weight:bold;
-    }
-
-    footer{ text-align:center; color:#555; margin-top:10px; }
-
-    /* Responsive adjustments for iframe modal */
-    @media (max-width: 1100px){
-      .modal-content iframe{ height: 60vh !important; }
-      .modal-content{ max-width: 94vw; padding:12px; }
-    }
-    @media (max-width: 700px){
-      html, body { min-width: auto !important; }
-      .yt-thumb{ height:120px; }
-      .logo, .photo{ display:none; }
-      .title-area h1{ font-size:28px; }
-    }
-
-    /* Control row inside modal */
-    .player-controls{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      margin-top:10px;
-      justify-content:space-between;
-      flex-wrap:wrap;
-    }
-    .player-left{
-      display:flex; gap:8px; align-items:center;
-    }
-    .btn-player{
-      background:var(--accent);
-      color:white;
-      border:none;
-      padding:8px 12px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:700;
-    }
-    .btn-secondary{
-      background:#eee;
-      color:#222;
-    }
-    .player-title{
-      font-weight:700;
-      margin-left:8px;
-      color:#0b2b5a;
-    }
-    .small-muted{ color:#666; font-size:13px; }
-
-    /* hidden preload iframe */
-    #preloadFrame{ display:none; width:1px; height:1px; position: absolute; left:-9999px; top:-9999px; }
-  </style>
+/* FOOTER */
+.footer {
+  text-align: center;
+  margin-top: 40px;
+  padding: 15px 0;
+  font-size: 14px;
+  opacity: 0.7;
+}
+</style>
 </head>
+
 <body>
 
-  <div class="wrap">
+<div class="container">
 
-    <!-- HEADER -->
-    <header>
-      <img class="logo" src="https://raw.githubusercontent.com/abobby9/abobby9/main/Logo.png" alt="logo">
-
-      <div class="title-area">
-        <h1>A Bobby Education 9</h1>
-        <div class="subtitle">(Learn new things and increase your knowledge.)</div>
-
-        <div class="social-buttons">
-          <a class="yt-btn" href="https://www.youtube.com/@ABobbyEducation9" target="_blank" rel="noopener">📺 YouTube</a>
-          <a class="ig-btn" href="https://www.instagram.com/abobbyeducation9/" target="_blank" rel="noopener">📷 Instagram</a>
-        </div>
-      </div>
-
-      <img class="photo" src="https://raw.githubusercontent.com/abobby9/abobby9/main/Photo.png" alt="photo">
-    </header>
-
-    <!-- SEARCH -->
-    <div class="search-container">
-      <div class="search-box">
-        <input id="searchInput" type="text" placeholder="Search everything... (Enter or 🔍)" oninput="onSearchInput()">
-        <button class="search-btn" onclick="triggerSearch()">🔍</button>
-        <button class="voice-btn" onclick="startVoiceSearch()">🎤</button>
-      </div>
+  <!-- HEADER -->
+  <header class="brand">
+    <div class="photo">
+      <img src="https://raw.githubusercontent.com/abobby9/ABobby9/main/Photo.png">
     </div>
 
-    <!-- FILTERS -->
-    <div class="filters-wrapper">
-      <div class="filters-panel">
-        <button class="filters-btn" id="filtersBtn">Filters ▾</button>
-
-        <div class="filters-dropdown" id="filtersDropdown">
-
-          <div class="filters-row">
-            <label>Playlist</label>
-            <select id="filterPlaylist">
-              <option value="__all">All playlists</option>
-            </select>
-          </div>
-
-          <div class="filters-row">
-            <label>Duration</label>
-            <select id="filterDuration">
-              <option value="all">All</option>
-              <option value="short">Short (≤60s)</option>
-              <option value="medium">Medium (1–10 min)</option>
-              <option value="long">Long (>10 min)</option>
-            </select>
-          </div>
-
-          <div class="filters-row">
-            <label>Year</label>
-            <select id="filterYear">
-              <option value="all">All</option>
-            </select>
-          </div>
-
-          <div class="filters-row">
-            <label>Match</label>
-            <div class="checkbox-row">
-              <input type="checkbox" id="matchDescription">
-              <label for="matchDescription">Title & Description</label>
-            </div>
-          </div>
-
-          <div class="filters-row">
-            <label>Sort</label>
-            <select id="filterSort">
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="views">Most Viewed</option>
-              <option value="alpha">Alphabetical</option>
-            </select>
-          </div>
-
-          <div class="filters-actions">
-            <button class="btn clear" id="clearFiltersBtn">Clear</button>
-            <button class="btn apply" id="applyFiltersBtn">Apply</button>
-          </div>
-
-        </div>
+    <div class="brand-text">
+      <h1>A Bobby 9</h1>
+      <div class="tagline">
+        A Place for Everything We Create — Step-by-Step Toward a Global Tomorrow.
       </div>
     </div>
+  </header>
 
-    <!-- SEARCH RESULTS -->
-    <div id="searchResults" class="card" style="display:none;">
-      <h2>Search Results</h2>
-      <div id="resultsGrid" class="yt-grid"></div>
-    </div>
+  <!-- MENU BUTTON -->
+  <input type="checkbox" id="sidebarToggle">
+  <label class="sidebar-btn" for="sidebarToggle">☰ Menu</label>
 
-    <!-- PLAYLISTS -->
-    <section class="card">
-      <h2>Playlists</h2>
-      <div id="playlistGrid" class="playlist-grid"></div>
-      <div id="noPlaylists" class="muted" style="display:none;">No playlists found.</div>
-    </section>
+  <!-- SIDEBAR (hidden until menu clicked) -->
+  <div class="sidebar">
 
-    <!-- ALL VIDEOS -->
-    <section class="card">
-      <h2>All Videos (including Shorts)</h2>
-      <div id="allVideosGrid" class="yt-grid"></div>
-      <div id="noVideos" class="muted" style="display:none;">No videos found.</div>
-    </section>
+    <a>A Bobby Education 9</a>
+    <a class="sub" href="https://abobby9.github.io/ABobbyEducation9/">Website</a>
+    <a class="sub" href="https://www.youtube.com/@ABobbyEducation9">YouTube</a>
+    <a class="sub" href="https://www.instagram.com/abobbyeducation9/">Instagram</a>
 
-    <!-- LIKE / SUBSCRIBE -->
-    <section class="card">
-      <h2 style="text-align:center;">Like, Subscribe and Share</h2>
-    </section>
+    <a>A Bobby 9</a>
+    <a class="sub" href="https://www.youtube.com/@ABobby9">YouTube</a>
 
-    <!-- CONTACT -->
-    <section class="card">
-      <h2>Contact</h2>
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSdOpYn8VGVIslrUG5WpFYmh1StOrnCvBhNv2UJ1q4KHJNIplg/viewform"
-         target="_blank"
-         style="padding:12px 16px; background:#eee; display:inline-block; border-radius:10px; text-decoration:none; color:#0a376f;">
-         Click here to Contact
+    <!-- NEW CONTACT LINK ADDED HERE -->
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdOpYn8VGVIslrUG5WpFYmh1StOrnCvBhNv2UJ1q4KHJNIplg/viewform?usp=sharing&ouid=102737947279443254526">
+      Contact
+    </a>
+
+  </div>
+
+  <!-- TITLE -->
+  <div class="section-title">Our Digital Spaces</div>
+
+  <!-- LIST -->
+  <ul class="list">
+    <li>
+      <div class="serial">1</div>
+
+      <a class="edu-logo" href="https://abobby9.github.io/ABobbyEducation9/">
+        <img src="https://raw.githubusercontent.com/abobby9/ABobby9/main/Logo.png">
       </a>
-    </section>
 
-    <footer>© <span id="year"></span> A Bobby Education 9</footer>
+      <div class="entry-content">
+        <p class="entry-title">
+          <a href="https://abobby9.github.io/ABobbyEducation9/">
+            A Bobby Education 9 — Click to Visit Website
+          </a>
+        </p>
+
+        <div class="entry-links">
+          <a href="https://www.youtube.com/@ABobbyEducation9">YouTube</a> •
+          <a href="https://www.instagram.com/abobbyeducation9/">Instagram</a>
+        </div>
+      </div>
+    </li>
+  </ul>
+
+  <!-- ABOUT -->
+  <aside class="about">
+    <h2>About</h2>
+    <p>
+      A Bobby 9 is a YouTube channel created to serve as a central place where I 
+      share links to the other websites and channels I manage. A Bobby 9 itself 
+      does not upload videos. It simply works as a hub through which people can 
+      find my other YouTube channels and their websites.
+    </p>
+
+    <div class="about-sign">– Anurag Bobby</div>
+  </aside>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    © 2025 A Bobby 9. All Rights Reserved.
   </div>
 
-  <!-- PLAYLIST MODAL -->
-  <div id="playlistModal" class="modal" aria-hidden="true">
-    <div class="modal-content">
-      <div style="display:flex; justify-content:space-between;">
-        <h3 id="modalTitle"></h3>
-        <div class="close-btn" id="closeModal">✕</div>
-      </div>
-      <div id="modalVideos" class="yt-grid" style="margin-top:14px;"></div>
-    </div>
-  </div>
+</div>
 
-  <!-- VIDEO PLAYER MODAL (UNIFIED) -->
-  <div id="videoPlayerModal" class="modal" aria-hidden="true">
-    <div class="modal-content" role="dialog" aria-modal="true" style="max-width:900px;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div class="player-left">
-          <button class="btn-player btn-secondary" id="prevBtn" title="Previous (Arrow Left)">⟨ Prev</button>
-          <button class="btn-player btn-secondary" id="nextBtn" title="Next (Arrow Right)">Next ⟩</button>
-          <div class="player-title" id="nowPlayingTitle">Now Playing</div>
-        </div>
-
-        <div style="display:flex; gap:8px; align-items:center;">
-          <div class="small-muted" id="nowPlayingMeta"></div>
-          <button class="close-btn" id="closeVideoBtn">✕</button>
-        </div>
-      </div>
-
-      <div style="margin-top:10px;">
-        <!-- iframe used for embedding; src set dynamically -->
-        <iframe id="videoFrame" width="100%" height="500" frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen
-          title="Video player"></iframe>
-      </div>
-
-      <div class="player-controls">
-        <div>
-          <button class="btn-player" id="openExternalBtn">Open in YouTube</button>
-          <button class="btn-player btn-secondary" id="autoplayToggleBtn" title="Toggle autoplay">Autoplay On</button>
-        </div>
-        <div class="small-muted" id="playerHint">Use ← / → to navigate, Esc to close</div>
-      </div>
-    </div>
-
-    <!-- hidden preload iframe (best-effort) -->
-    <iframe id="preloadFrame" aria-hidden="true"></iframe>
-  </div>
-
-  <script>
-    /*********************************************
-     * CONFIG
-     *********************************************/
-    const API_KEY = "AIzaSyAlOvNpWfbUcIayhbC2IcK4vtsRjUdpPWg";
-    const CHANNEL_ID = "UC7VwSQ40PUY2eMlLRADq-LQ";
-    const UPLOADS_PLAYLIST_ID = CHANNEL_ID.replace(/^UC/, "UU");
-
-    /*********************************************
-     * GLOBAL DATA
-     *********************************************/
-    const GLOBAL_DATA = { playlists: [], videos: [] };
-    let CURRENT_FILTERS = {
-      playlistId: "__all",
-      duration: "all",
-      year: "all",
-      matchDescription: false,
-      sort: "newest",
-      searchTerm: ""
-    };
-
-    // Playback context: { list: [video objects], index: number }
-    let PLAYBACK_CONTEXT = { list: [], index: -1 };
-    let AUTOPLAY_ENABLED = true;
-
-    /*********************************************
-     * UTILITIES
-     *********************************************/
-    function isoDurationToSeconds(iso){
-      if(!iso) return 0;
-      const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-      const h = parseInt(m[1]||0,10);
-      const min = parseInt(m[2]||0,10);
-      const s = parseInt(m[3]||0,10);
-      return h*3600 + min*60 + s;
-    }
-
-    function formatDuration(sec){
-      if(sec<60) return sec+"s";
-      const m = Math.floor(sec/60);
-      const s = sec % 60;
-      if(m<60) return m+":"+String(s).padStart(2,"0");
-      const h = Math.floor(m/60);
-      return h+":"+String(m%60).padStart(2,"0")+":"+String(s).padStart(2,"0");
-    }
-
-    function escapeHtml(s){
-      return (s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-    }
-
-    function debounce(fn,ms=300){
-      let t;
-      return (...args)=>{
-        clearTimeout(t);
-        t=setTimeout(()=>fn(...args),ms);
-      };
-    }
-
-    /*********************************************
-     * YOUTUBE FETCH HELPERS
-     *********************************************/
-    async function fetchJson(url){
-      const r = await fetch(url);
-      if(!r.ok) throw new Error("Err "+r.status);
-      return r.json();
-    }
-
-    async function fetchPlaylists(){
-      const grid = document.getElementById("playlistGrid");
-      grid.innerHTML="Loading playlists…";
-
-      const url=`https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&channelId=${CHANNEL_ID}&maxResults=50&key=${API_KEY}`;
-      const data=await fetchJson(url);
-
-      GLOBAL_DATA.playlists=data.items||[];
-
-      grid.innerHTML="";
-      if(!GLOBAL_DATA.playlists.length){
-        document.getElementById("noPlaylists").style.display="block";
-      }
-
-      GLOBAL_DATA.playlists.forEach(pl=>grid.appendChild(createPlaylistCard(pl)));
-
-      populatePlaylistSelect();
-    }
-
-    async function fetchUploads(){
-      const grid=document.getElementById("allVideosGrid");
-      grid.innerHTML="Loading videos…";
-
-      const url=`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${UPLOADS_PLAYLIST_ID}&maxResults=50&key=${API_KEY}`;
-      const data=await fetchJson(url);
-
-      const ids=(data.items||[]).map(i=>i.snippet.resourceId.videoId);
-
-      GLOBAL_DATA.videos = await fetchVideosDetails(ids);
-
-      grid.innerHTML="";
-      GLOBAL_DATA.videos.forEach((v,i)=>grid.appendChild(createVideoCard(v, {contextList:GLOBAL_DATA.videos, index:i})));
-
-      populateYearSelect();
-    }
-
-    async function fetchVideosDetails(ids){
-      const batches=[];
-      for(let i=0;i<ids.length;i+=50) batches.push(ids.slice(i,i+50));
-
-      const out=[];
-      for(const b of batches){
-        const url=`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${b.join(",")}&key=${API_KEY}`;
-        const data=await fetchJson(url);
-        out.push(...(data.items||[]));
-      }
-      return out;
-    }
-
-    async function fetchPlaylistVideos(id){
-      const url=`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${id}&maxResults=50&key=${API_KEY}`;
-      const data=await fetchJson(url);
-      const ids=(data.items||[]).map(i=>i.snippet.resourceId.videoId);
-      return await fetchVideosDetails(ids);
-    }
-
-    /*********************************************
-     * VIDEO PLAYER (UNIFIED) + PRELOAD
-     *********************************************/
-    const videoPlayerModal = document.getElementById("videoPlayerModal");
-    const videoFrame = document.getElementById("videoFrame");
-    const preloadFrame = document.getElementById("preloadFrame");
-    const nowPlayingTitle = document.getElementById("nowPlayingTitle");
-    const nowPlayingMeta = document.getElementById("nowPlayingMeta");
-    const closeVideoBtn = document.getElementById("closeVideoBtn");
-    const openExternalBtn = document.getElementById("openExternalBtn");
-    const prevBtn = document.getElementById("prevBtn");
-    const nextBtn = document.getElementById("nextBtn");
-    const autoplayToggleBtn = document.getElementById("autoplayToggleBtn");
-
-    function preconnectYouTube(){
-      // Add preconnect / dns-prefetch links to speed up embed loading (idempotent)
-      if(!document.querySelector('link[data-youtube-preconnect]')){
-        const l1 = document.createElement('link');
-        l1.rel = 'preconnect';
-        l1.href = 'https://www.youtube.com';
-        l1.setAttribute('data-youtube-preconnect', '1');
-        document.head.appendChild(l1);
-
-        const l2 = document.createElement('link');
-        l2.rel = 'preconnect';
-        l2.href = 'https://www.google.com';
-        l2.setAttribute('data-youtube-preconnect', '1');
-        document.head.appendChild(l2);
-      }
-    }
-
-    function openVideoPlayerByContext(list, index){
-      // set playback context and open
-      PLAYBACK_CONTEXT.list = list || [];
-      PLAYBACK_CONTEXT.index = index ?? 0;
-      const v = PLAYBACK_CONTEXT.list[PLAYBACK_CONTEXT.index];
-      if(!v) return;
-      openVideoPlayer((typeof v.id === "string") ? v.id : (v.id.videoId || ""), v.snippet?.title || "", true);
-    }
-
-    function openVideoPlayer(videoId, title, setContext=false){
-      preconnectYouTube();
-      nowPlayingTitle.textContent = title ? (title.length>70 ? title.slice(0,67)+"..." : title) : "Now Playing";
-      nowPlayingMeta.textContent = ""; // we'll set below if available
-
-      // autoplay param based on AUTOPLAY_ENABLED
-      const autoplayParam = AUTOPLAY_ENABLED ? "1" : "0";
-      const embed = "https://www.youtube.com/embed/" + encodeURIComponent(videoId) + "?autoplay=" + autoplayParam + "&rel=0";
-
-      videoFrame.src = embed;
-      videoPlayerModal.classList.add("open");
-      videoPlayerModal.classList.remove("closing");
-      videoPlayerModal.style.display = "flex";
-      videoPlayerModal.setAttribute("aria-hidden","false");
-      document.body.style.overflow = "hidden"; // prevent background scroll
-
-      // update external link
-      openExternalBtn.onclick = ()=> window.open("https://youtube.com/watch?v=" + videoId, "_blank", "noopener");
-
-      // show meta (if we have it in current context list)
-      const ctx = PLAYBACK_CONTEXT.list || [];
-      const idx = PLAYBACK_CONTEXT.index;
-      if(ctx && ctx[idx] && ctx[idx].snippet){
-        const sec = isoDurationToSeconds(ctx[idx].contentDetails?.duration);
-        nowPlayingMeta.textContent = `${formatDuration(sec)} • ${new Date(ctx[idx].snippet.publishedAt).getFullYear()}`;
-      } else {
-        nowPlayingMeta.textContent = "";
-      }
-
-      // preload next video (best-effort)
-      preloadAdjacent();
-    }
-
-    function closeVideoPlayer(){
-      // play close animation
-      videoPlayerModal.classList.add("closing");
-      videoPlayerModal.classList.remove("open");
-      videoPlayerModal.setAttribute("aria-hidden","true");
-      // after animation, hide and clear src to stop playback
-      setTimeout(()=>{
-        videoPlayerModal.style.display = "none";
-        videoFrame.src = "";
-        preloadFrame.src = "";
-        document.body.style.overflow = ""; // restore scrolling
-        videoPlayerModal.classList.remove("closing");
-      }, 200);
-    }
-
-    // Preload next video iframe (best-effort). Browsers may block autoplay but preconnect + hidden iframe helps.
-    function preloadAdjacent(){
-      const list = PLAYBACK_CONTEXT.list || [];
-      const idx = PLAYBACK_CONTEXT.index;
-      const nextIndex = (idx + 1) < list.length ? (idx + 1) : -1;
-      const prevIndex = (idx - 1) >= 0 ? (idx - 1) : -1;
-
-      // prefer preloading next
-      if(nextIndex >= 0){
-        const nextVideo = list[nextIndex];
-        const id = (typeof nextVideo.id === "string") ? nextVideo.id : (nextVideo.id.videoId || "");
-        // load into hidden iframe without autoplay (mute not reliable). This is a best-effort performance hint.
-        preloadFrame.src = "https://www.youtube.com/embed/" + encodeURIComponent(id) + "?autoplay=0&rel=0";
-      } else {
-        preloadFrame.src = "";
-      }
-
-      // update UI availability of prev/next buttons
-      prevBtn.disabled = prevIndex === -1;
-      nextBtn.disabled = nextIndex === -1;
-    }
-
-    // handlers
-    closeVideoBtn.onclick = closeVideoPlayer;
-    document.addEventListener("keydown", (e)=>{
-      if(e.key === "Escape") {
-        if(videoPlayerModal.classList.contains("open")) closeVideoPlayer();
-        if(modal.classList.contains("open")) modal.classList.remove("open");
-      } else if(e.key === "ArrowRight"){
-        // next
-        playNext();
-      } else if(e.key === "ArrowLeft"){
-        playPrev();
-      }
-    });
-
-    // close when clicking outside content
-    videoPlayerModal.addEventListener("click", (e)=>{
-      if(e.target === videoPlayerModal) closeVideoPlayer();
-    });
-
-    prevBtn.onclick = ()=>playPrev();
-    nextBtn.onclick = ()=>playNext();
-    autoplayToggleBtn.onclick = ()=>{
-      AUTOPLAY_ENABLED = !AUTOPLAY_ENABLED;
-      autoplayToggleBtn.textContent = AUTOPLAY_ENABLED ? "Autoplay On" : "Autoplay Off";
-    };
-
-    function playNext(){
-      if(!PLAYBACK_CONTEXT.list?.length) return;
-      const idx = PLAYBACK_CONTEXT.index;
-      if(idx + 1 < PLAYBACK_CONTEXT.list.length){
-        PLAYBACK_CONTEXT.index = idx + 1;
-        const v = PLAYBACK_CONTEXT.list[PLAYBACK_CONTEXT.index];
-        openVideoPlayer((typeof v.id === "string") ? v.id : (v.id.videoId || ""), v.snippet?.title || "");
-      }
-    }
-    function playPrev(){
-      if(!PLAYBACK_CONTEXT.list?.length) return;
-      const idx = PLAYBACK_CONTEXT.index;
-      if(idx - 1 >= 0){
-        PLAYBACK_CONTEXT.index = idx - 1;
-        const v = PLAYBACK_CONTEXT.list[PLAYBACK_CONTEXT.index];
-        openVideoPlayer((typeof v.id === "string") ? v.id : (v.id.videoId || ""), v.snippet?.title || "");
-      }
-    }
-
-    /*********************************************
-     * CREATE CARDS
-     *********************************************/
-    function createPlaylistCard(pl){
-      const div=document.createElement("div");
-      div.className="playlist-card";
-
-      const thumb=pl.snippet.thumbnails?.medium?.url || "";
-
-      div.innerHTML=`
-        <img class="playlist-thumb" src="${thumb}" alt="">
-        <div class="playlist-title">${escapeHtml(pl.snippet.title)}</div>
-      `;
-      div.onclick=()=>openPlaylist(pl.id,pl.snippet.title);
-      return div;
-    }
-
-    // createVideoCard accepts an optional options object:
-    // { contextList: Array-of-video-objects, index: number } - used for prev/next navigation
-    function createVideoCard(v, options){
-      // v is a full video resource from videos.list
-      const vid = (typeof v.id === "string") ? v.id : (v.id.videoId || "");
-      const title = v.snippet.title || "";
-      const thumb = v.snippet.thumbnails?.high?.url || v.snippet.thumbnails?.medium?.url || "";
-      const seconds = isoDurationToSeconds(v.contentDetails?.duration);
-      const isShort = seconds <= 60;
-
-      const card = document.createElement("div");
-      card.className = "yt-item";
-      card.setAttribute("role","button");
-
-      // click behavior sets PLAYBACK_CONTEXT to provided context list if available,
-      // otherwise to a singleton list containing this video (so next/prev disable).
-      card.onclick = ()=>{
-        if(options && Array.isArray(options.contextList)){
-          PLAYBACK_CONTEXT.list = options.contextList;
-          PLAYBACK_CONTEXT.index = options.index ?? options.contextList.findIndex(x=>((typeof x.id==="string")?x.id:x.id.videoId) === vid);
-        } else {
-          PLAYBACK_CONTEXT.list = [v];
-          PLAYBACK_CONTEXT.index = 0;
-        }
-        openVideoPlayer(vid, title);
-      };
-
-      card.innerHTML = `
-        <img class="yt-thumb" src="${thumb}" alt="">
-        <div class="yt-title">${escapeHtml(title)}</div>
-        <div class="yt-meta">
-          ${isShort?'<span class="badge-short">SHORT</span>':''}
-          <span>${formatDuration(seconds)}</span>
-          <span>${new Date(v.snippet.publishedAt).getFullYear()}</span>
-          <span>${(v.statistics?.viewCount||0).toLocaleString()} views</span>
-        </div>
-      `;
-      return card;
-    }
-
-    /*********************************************
-     * POPULATE FILTER SELECTS
-     *********************************************/
-    function populatePlaylistSelect(){
-      const sel=document.getElementById("filterPlaylist");
-      GLOBAL_DATA.playlists.forEach(pl=>{
-        const opt=document.createElement("option");
-        opt.value=pl.id;
-        opt.textContent=pl.snippet.title;
-        sel.appendChild(opt);
-      });
-    }
-
-    function populateYearSelect(){
-      const sel=document.getElementById("filterYear");
-      const years=[...new Set(GLOBAL_DATA.videos.map(v=>new Date(v.snippet.publishedAt).getFullYear()))]
-        .sort((a,b)=>b-a);
-
-      years.forEach(y=>{
-        const opt=document.createElement("option");
-        opt.value=y;
-        opt.textContent=y;
-        sel.appendChild(opt);
-      });
-    }
-
-    /*********************************************
-     * PLAYLIST MODAL
-     *********************************************/
-    const modal=document.getElementById("playlistModal");
-    const modalVideos=document.getElementById("modalVideos");
-    const modalTitle=document.getElementById("modalTitle");
-    const closeModalBtn=document.getElementById("closeModal");
-
-    async function openPlaylist(id,title){
-      modal.classList.add("open");
-      modal.style.display = "flex";
-      modal.setAttribute("aria-hidden","false");
-      modalTitle.textContent=title;
-      modalVideos.innerHTML="Loading…";
-
-      try{
-        const videos = await fetchPlaylistVideos(id);
-        modalVideos.innerHTML="";
-        if(!videos.length){
-          modalVideos.innerHTML = "<div>No videos in this playlist.</div>";
-        } else {
-          // For each video, pass the full playlist array as context so prev/next works
-          videos.forEach((v,i)=> modalVideos.appendChild(createVideoCard(v, {contextList:videos, index:i})));
-        }
-      }catch(err){
-        modalVideos.innerHTML = "<div>Error loading playlist.</div>";
-        console.error(err);
-      }
-    }
-
-    closeModalBtn.onclick = ()=>{ modal.classList.remove("open"); modal.style.display = "none"; modal.setAttribute("aria-hidden","true"); };
-    modal.addEventListener("click", (e)=>{
-      if(e.target === modal) { modal.classList.remove("open"); modal.style.display = "none"; modal.setAttribute("aria-hidden","true"); }
-    });
-
-    /*********************************************
-     * SEARCH + FILTER LOGIC
-     *********************************************/
-    const onSearchInput = debounce(()=>{
-      CURRENT_FILTERS.searchTerm=document.getElementById("searchInput").value.trim();
-      applyFilters();
-    },300);
-
-    document.getElementById("searchInput").addEventListener("keydown", (e)=>{
-      if(e.key==="Enter"){
-        e.preventDefault();
-        CURRENT_FILTERS.searchTerm=document.getElementById("searchInput").value.trim();
-        applyFilters();
-      }
-    });
-
-    function triggerSearch(){
-      CURRENT_FILTERS.searchTerm=document.getElementById("searchInput").value.trim();
-      applyFilters();
-    }
-
-    function startVoiceSearch(){
-      const Recog=window.SpeechRecognition||window.webkitSpeechRecognition;
-      if(!Recog) return alert("Voice search not supported!");
-
-      const r=new Recog();
-      const mic=document.querySelector(".voice-btn");
-
-      r.onstart=()=>mic.classList.add("listening");
-      r.onend=()=>mic.classList.remove("listening");
-
-      r.onresult=(e)=>{
-        const text=e.results[0][0].transcript;
-        document.getElementById("searchInput").value=text;
-        CURRENT_FILTERS.searchTerm=text;
-        applyFilters();
-      };
-
-      r.start();
-    }
-
-    async function applyFilters(){
-      const resultsSection=document.getElementById("searchResults");
-      const grid=document.getElementById("resultsGrid");
-      resultsSection.style.display="block";
-      grid.innerHTML="Searching…";
-
-      let videos=[...GLOBAL_DATA.videos];
-
-      if(CURRENT_FILTERS.playlistId!=="__all"){
-        videos=await fetchPlaylistVideos(CURRENT_FILTERS.playlistId);
-      }
-
-      const term=CURRENT_FILTERS.searchTerm.toLowerCase();
-
-      videos=videos.filter(v=>{
-        const title=v.snippet.title.toLowerCase();
-        const desc=v.snippet.description.toLowerCase();
-        if(term){
-          if(CURRENT_FILTERS.matchDescription) return title.includes(term)||desc.includes(term);
-          return title.includes(term);
-        }
-        return true;
-      });
-
-      videos=videos.filter(v=>{
-        const sec=isoDurationToSeconds(v.contentDetails.duration);
-        if(CURRENT_FILTERS.duration==="short") return sec<=60;
-        if(CURRENT_FILTERS.duration==="medium") return sec>60&&sec<=600;
-        if(CURRENT_FILTERS.duration==="long") return sec>600;
-        return true;
-      });
-
-      if(CURRENT_FILTERS.year!=="all"){
-        videos=videos.filter(v=>{
-          return new Date(v.snippet.publishedAt).getFullYear()==CURRENT_FILTERS.year;
-        });
-      }
-
-      if(CURRENT_FILTERS.sort==="newest"){
-        videos.sort((a,b)=>new Date(b.snippet.publishedAt)-new Date(a.snippet.publishedAt));
-      }
-      if(CURRENT_FILTERS.sort==="oldest"){
-        videos.sort((a,b)=>new Date(a.snippet.publishedAt)-new Date(b.snippet.publishedAt));
-      }
-      if(CURRENT_FILTERS.sort==="views"){
-        videos.sort((a,b)=>(b.statistics?.viewCount||0)-(a.statistics?.viewCount||0));
-      }
-      if(CURRENT_FILTERS.sort==="alpha"){
-        videos.sort((a,b)=>a.snippet.title.localeCompare(b.snippet.title));
-      }
-
-      grid.innerHTML="";
-      if(!videos.length){
-        grid.innerHTML="No results.";
-        return;
-      }
-
-      // Pass the search results array as context so prev/next works within results
-      videos.forEach((v,i)=>grid.appendChild(createVideoCard(v, {contextList:videos, index:i})));
-    }
-
-    /*********************************************
-     * FILTER BUTTON HANDLERS
-     *********************************************/
-    document.getElementById("filtersBtn").onclick=()=>{
-      document.getElementById("filtersDropdown").classList.toggle("open");
-    };
-
-    document.getElementById("applyFiltersBtn").onclick=()=>{
-      CURRENT_FILTERS.playlistId=document.getElementById("filterPlaylist").value;
-      CURRENT_FILTERS.duration=document.getElementById("filterDuration").value;
-      CURRENT_FILTERS.year=document.getElementById("filterYear").value;
-      CURRENT_FILTERS.matchDescription=document.getElementById("matchDescription").checked;
-      CURRENT_FILTERS.sort=document.getElementById("filterSort").value;
-
-      document.getElementById("filtersDropdown").classList.remove("open");
-      applyFilters();
-    };
-
-    document.getElementById("clearFiltersBtn").onclick=()=>{
-      CURRENT_FILTERS={
-        playlistId:"__all",
-        duration:"all",
-        year:"all",
-        matchDescription:false,
-        sort:"newest",
-        searchTerm:CURRENT_FILTERS.searchTerm
-      };
-
-      document.getElementById("filterPlaylist").value="__all";
-      document.getElementById("filterDuration").value="all";
-      document.getElementById("filterYear").value="all";
-      document.getElementById("matchDescription").checked=false;
-      document.getElementById("filterSort").value="newest";
-
-      applyFilters();
-    };
-
-    /*********************************************
-     * INIT
-     *********************************************/
-    async function init(){
-      document.getElementById("year").textContent=new Date().getFullYear();
-
-      await fetchPlaylists();
-      await fetchUploads();
-    }
-    init();
-
-  </script>
 </body>
 </html>
